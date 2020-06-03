@@ -43,7 +43,7 @@ export default class MentionsTextInput extends Component {
     onChangeText(val); // pass changed text back
     const lastChar = val.substr(this.state.selection.end, 1);
     const wordBoundry = triggerLocation === 'new-word-only' ? this.previousChar.trim().length === 0 : true;
-    if (lastChar === trigger && wordBoundry) {
+    if (lastChar === trigger.charAt(0) && wordBoundry) {
       this.startTracking();
     } else if ((lastChar === ' ' && isTrackingStarted) || val === '') {
       this.stopTracking();
