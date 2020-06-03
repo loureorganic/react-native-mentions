@@ -1,6 +1,6 @@
 {
   "name": "@nightw0lff/react-native-mentions",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Mentions textbox for React Native. Works on both ios and android",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thinkproductivity/react-native-mentions.git"
+    "url": "git+https://github.com/nightw0lff/react-native-mentions.git"
   },
   "keywords": ["react-component", "react-native", "mentions", "textInput"],
   "author": "Harshana Abeyaratne <harshana.abeyaratne@gmail.com> (https://github.com/harshq)",
@@ -28,7 +28,7 @@
     "eslint-plugin-react": "^7.6.1",
     "prop-types": "^15.6.0",
     "react": "^16.2.0",
-    "react-native": "^0.53.0",
+    "react-native": "^0.62.2",
     "prettier": "^1.10.2"
   }
 }
