@@ -196,7 +196,7 @@ MentionsTextInput.propTypes = {
 MentionsTextInput.defaultProps = {
   textInputStyle: {borderColor: '#ebebeb', borderWidth: 1, fontSize: 15},
   suggestionsPanelStyle: {backgroundColor: 'rgba(100,100,100,0.1)'},
-//   loadingComponent: () => <Text>Loading...</Text>,
+  loadingComponent: () => <Text>Loading...</Text>,
   textInputMinHeight: 30,
   textInputMaxHeight: 80,
   horizontal: true,
