@@ -118,6 +118,7 @@ export default class MentionsTextInput extends Component {
       renderSuggestionsRow,
       suggestionsPanelStyle = {},
       textInputStyle = {},
+      StyledInputComponent=TextInput,
       textInputMinHeight,
       value,
       textInputMaxHeight,
@@ -142,7 +143,7 @@ export default class MentionsTextInput extends Component {
             }}
           />
         </Animated.View>
-        <TextInput
+        <StyledInputComponent
           {...this.props}
           onSelectionChange={event => {
             if (this.props.onSelectionChange) {
