@@ -46,7 +46,7 @@ export default class MentionsTextInput extends Component {
 
     if (lastChar === trigger && wordBoundry) {
       this.startTracking();
-    } else if ((this.previousChar === trigger && val.substr(this.state.selection.end+1, 1) !== trigger && val.substr(this.state.selection.end-1, 1) !== trigger) && isTrackingStarted) {
+    } else if ((this.previousChar === trigger && val.substr(this.state.selection.end+1, 1) !== trigger && val.substr(this.state.selection.end-1, 1) !== trigger) && isTrackingStarted && lastChar.trim() === '') {
       this.stopTracking();
     }
     this.previousChar = lastChar;
