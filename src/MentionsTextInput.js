@@ -43,9 +43,10 @@ export default class MentionsTextInput extends Component {
     onChangeText(val); // pass changed text back
     const lastChar = val.substr(this.state.selection.end, 1);
     const wordBoundry = triggerLocation === 'new-word-only' ? this.previousChar.trim().length === 0 : true;
+
     if (lastChar === trigger && wordBoundry) {
       this.startTracking();
-    } else if ((lastChar === ' ' && isTrackingStarted) || val === '') {
+    } else if ((this.previousChar === trigger && val.substr(this.state.selection.end+1, 1) !== trigger && val.substr(this.state.selection.end-1, 1) !== trigger) && isTrackingStarted) {
       this.stopTracking();
     }
     this.previousChar = lastChar;
@@ -67,11 +68,13 @@ export default class MentionsTextInput extends Component {
     const {triggerLocation, trigger} = this.props;
     if (this.isTrackingStarted) {
       const boundary = triggerLocation === 'new-word-only' ? 'B' : '';
-      const pattern = new RegExp(`\\${boundary}${trigger}[a-z0-9_-]+|\\${boundary}${trigger}`, 'gi');
+      const pattern = this.props.regex ? this.props.regex : new RegExp(`\\${boundary}${trigger}[a-z0-9_-]+|\\${boundary}${trigger}`, 'gi');
       const keywordArray = val.substr(0, this.state.selection.end + 1).match(pattern);
       if (keywordArray && !!keywordArray.length) {
         const lastKeyword = keywordArray[keywordArray.length - 1];
         this.updateSuggestions(lastKeyword);
+      } else {
+        this.stopTracking();
       }
     }
   }
@@ -176,6 +179,7 @@ MentionsTextInput.propTypes = {
   textInputMinHeight: PropTypes.number,
   textInputMaxHeight: PropTypes.number,
   trigger: PropTypes.string.isRequired,
+  regex: PropTypes.instanceOf(RegExp),
   triggerLocation: PropTypes.oneOf(['new-word-only', 'anywhere']).isRequired,
   value: PropTypes.string,
   onChangeText: PropTypes.func.isRequired,
