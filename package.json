@@ -1,6 +1,6 @@
 {
   "name": "@nightw0lff/react-native-mentions",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Mentions textbox for React Native. Works on both ios and android",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,10 @@
     "url": "https://github.com/harshq/react-native-mentions/issues"
   },
   "homepage": "https://github.com/harshq/react-native-mentions#readme",
+  "dependencies": {
+    "react-autosize-textarea": "^7.0.0",
+    "caret-pos": "^2.0.0"
+  },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
     "eslint": "^4.17.0",
