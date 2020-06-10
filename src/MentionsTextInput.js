@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback, forwardRef, memo } from 'react';
+import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import {Text, View, Animated, TextInput, FlatList, ViewPropTypes, Platform} from 'react-native';
-import { position, offset } from 'caret-pos';
+import { position } from 'caret-pos';
 import PropTypes from 'prop-types';
 import TextAreaAutoSize from 'react-autosize-textarea';
 
-const suggestionRowHeight = new Animated.Value(0);
 
 const InputWeb = forwardRef((props, forwardRef) => {
   const inputRef = useRef();
@@ -39,6 +38,7 @@ const MentionsTextInput = (props, forwardedRef) => {
   const [selection, setSelection] = useState({ start: 0, end: 0 });
   const [previousTriggerPos, setPreviousTriggerPos] = useState(0);
   const [matchTrigger, setMatchTrigger] = useState(new RegExp());
+  const [suggestionRowHeight,] = useState(new Animated.Value(0));
 
   useEffect(() => {
     const result = props.regex.toString().match(/\/(?<regex>.*)\//);
