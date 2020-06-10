@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef, memo } from 'react';
 import {Text, View, Animated, TextInput, FlatList, ViewPropTypes, Platform} from 'react-native';
-import { position } from 'caret-pos';
+import { position, offset } from 'caret-pos';
 import PropTypes from 'prop-types';
 import TextAreaAutoSize from 'react-autosize-textarea';
 
@@ -37,7 +37,24 @@ const Input = Platform.OS === 'web' ? InputWeb : TextInput;
 const MentionsTextInput = (props, forwardedRef) => {
   const [isTrackingStarted, setTracking] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
-  const [previousChar, setPreviousChar] = useState(' ');
+  const [previousTriggerPos, setPreviousTriggerPos] = useState(0);
+  const [matchTrigger, setMatchTrigger] = useState(new RegExp());
+
+  useEffect(() => {
+    const result = props.regex.toString().match(/\/(?<regex>.*)\//);
+
+    if (result.groups && result.groups.regex) {
+        const matchString = result.groups.regex.replace(/\\/gm, '\\');
+
+        setMatchTrigger(new RegExp(`(${matchString})(?!.*${matchString})`));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (props.togglePreviewList) {
+        stopTracking();
+    }
+  }, [props.togglePreviewList]);
 
   useEffect(() => {
     if (props.value === '') {
@@ -54,73 +71,72 @@ const MentionsTextInput = (props, forwardedRef) => {
     } else if (props.suggestionsData.length === 0) {
       openSuggestionsPanel(0);
     }
-  }, [props.value, props.suggestionsData.length]);
+  }, [props.value, props.suggestionsData]);
 
-  const onChangeText = useCallback((val) => {
-    const {onChangeText, triggerLocation, trigger} = props;
+  const onChangeText = (val) => {
+    const {onChangeText, trigger} = props;
 
     onChangeText(val); // pass changed text back
-    const lastChar = val.substr(selection.end, 1);
-    const wordBoundry = triggerLocation === 'new-word-only' ? previousChar.trim().length === 0 : true;
 
-    if ((lastChar === trigger || val.substr(selection.end+1, 1) === trigger || val.substr(selection.end-1, 1) === trigger) && wordBoundry) {
+    if (val.substr(selection.start, 1) === trigger) {
+        setPreviousTriggerPos(selection.start)
+    }
+
+    const lastOcurrence = matchTrigger.exec(val.slice(previousTriggerPos, selection.end));
+
+    if (lastOcurrence && lastOcurrence[0].charAt(0) === trigger && !isTrackingStarted) {
       startTracking();
-    } else if ((previousChar === trigger && val.substr(selection.end+1, 1) !== trigger && val.substr(selection.end-1, 1) !== trigger) && isTrackingStarted && lastChar.trim() === '') {
+    } else if (!lastOcurrence && isTrackingStarted) {
       stopTracking();
     }
 
-    setPreviousChar(lastChar);
     identifyKeyword(val);
-  }, [previousChar, selection, isTrackingStarted])
+  };
 
-  const closeSuggestionsPanel = useCallback(() => {
+  const closeSuggestionsPanel = () => {
     Animated.timing(suggestionRowHeight, {
       toValue: 0,
       duration: 100,
     }).start();
-  }, [suggestionRowHeight]);
+  };
 
-  const updateSuggestions = useCallback((lastKeyword) => {
+  const updateSuggestions = (lastKeyword) => {
     props.triggerCallback(lastKeyword);
-  }, []);
+  };
 
-  const identifyKeyword = useCallback((val) => {
-    const {triggerLocation, trigger} = props;
-
+  const identifyKeyword = (val) => {
     if (isTrackingStarted) {
-      const boundary = triggerLocation === 'new-word-only' ? 'B' : '';
-      const pattern = props.regex ? props.regex : new RegExp(`\\${boundary}${trigger}[a-z0-9_-]+|\\${boundary}${trigger}`, 'gi');
-      const keywordArray = val.substr(0, selection.end + 1).match(pattern);
+      const keywordArray = val.substr(0, selection.end + 1).match(props.regex);
       if (keywordArray && !!keywordArray.length) {
         const lastKeyword = keywordArray[keywordArray.length - 1];
+
         updateSuggestions(lastKeyword);
       } else {
         stopTracking();
       }
     }
-  }, [isTrackingStarted, selection]);
+  };
 
-  const openSuggestionsPanel = useCallback((height) => {
+  const openSuggestionsPanel = (height) => {
     Animated.timing(suggestionRowHeight, {
       toValue: height != null ? height : props.suggestionRowHeight,
       duration: 100,
     }).start();
-  }, [props.suggestionRowHeight])
+  };
 
-  const startTracking = useCallback(() => {
+  const startTracking = () => {
     openSuggestionsPanel();
     setTracking(true);
-  }, []);
+  };
 
-  const stopTracking = useCallback(() => {
+  const stopTracking = () => {
     closeSuggestionsPanel();
     setTracking(false);
-  }, []);
+  };
 
-  const resetTextbox = useCallback(() => {
-    setPreviousChar(' ');
+  const resetTextbox = () => {
     stopTracking();
-  }, []);
+  };
 
   return (
     <View>
@@ -158,12 +174,12 @@ const MentionsTextInput = (props, forwardedRef) => {
           <FlatList
             keyboardShouldPersistTaps="always"
             horizontal={props.horizontal}
-            ListEmptyComponent={props.loadingComponent}
+            // ListEmptyComponent={props.loadingComponent}
             enableEmptySections
             data={props.suggestionsData}
             keyExtractor={props.keyExtractor}
             renderItem={rowData => {
-              return props.renderSuggestionsRow(rowData, stopTracking, (e) => { setSelection(e.selection); setPreviousChar('')});
+              return props.renderSuggestionsRow(rowData, stopTracking, (e) => { setSelection(e.selection); setPreviousTriggerPos(e.selection.start)});
             }}
           />
         </Animated.View>
