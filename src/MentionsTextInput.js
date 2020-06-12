@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
-import {Text, View, Animated, TextInput, FlatList, ViewPropTypes, Platform} from 'react-native';
+import React, { useState, useEffect, useCallback, useRef, forwardRef } from 'react';
+import {View, Animated, TextInput, FlatList, ViewPropTypes, Platform} from 'react-native';
 import { position } from 'caret-pos';
 import PropTypes from 'prop-types';
 import TextAreaAutoSize from 'react-autosize-textarea';
@@ -36,29 +36,30 @@ const Input = Platform.OS === 'web' ? InputWeb : TextInput;
 const MentionsTextInput = (props, forwardedRef) => {
   const [isTrackingStarted, setTracking] = useState(false);
   const [selection, setSelection] = useState({ start: 0, end: 0 });
-  const [previousTriggerPos, setPreviousTriggerPos] = useState(0);
+  const [triggerPosition, setTriggerPosition] = useState(0);
   const [matchTrigger, setMatchTrigger] = useState(new RegExp());
-  const [suggestionRowHeight,] = useState(new Animated.Value(0));
+
+  const suggestionRowHeight = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const result = props.regex.toString().match(/\/(?<regex>.*)\//);
 
     if (result.groups && result.groups.regex) {
-        const matchString = result.groups.regex.replace(/\\/gm, '\\');
+      const matchString = result.groups.regex.replace(/\\/gm, '\\');
 
-        setMatchTrigger(new RegExp(`(${matchString})(?!.*${matchString})`));
+      setMatchTrigger(new RegExp(`(${matchString})(?!.*${matchString})`));
     }
   }, []);
 
   useEffect(() => {
     if (props.togglePreviewList) {
-        stopTracking();
+      stopTracking();
     }
   }, [props.togglePreviewList]);
 
   useEffect(() => {
     if (props.value === '') {
-      resetTextbox();
+      stopTracking();
     } else if (isTrackingStarted && !props.horizontal && props.suggestionsData.length !== 0) {
       const numOfRows = (
         props.MaxVisibleRowCount >= props.suggestionsData.length
@@ -73,70 +74,57 @@ const MentionsTextInput = (props, forwardedRef) => {
     }
   }, [props.value, props.suggestionsData]);
 
+  const isValidCharTrigger = (char, trigger) => (
+    Array.isArray(trigger) 
+      ? trigger.includes(char) 
+      : (char === trigger)
+  )
+
   const onChangeText = (val) => {
     const {onChangeText, trigger} = props;
 
     onChangeText(val); // pass changed text back
 
-    if (val.substr(selection.start, 1) === trigger) {
-        setPreviousTriggerPos(selection.start)
-    }
+    if (isValidCharTrigger(val.substr(selection.start, 1), trigger))
+      setTriggerPosition(selection.start)
 
-    const lastOcurrence = matchTrigger.exec(val.slice(previousTriggerPos, selection.end));
+    const lastOcurrence = matchTrigger.exec(val.slice(triggerPosition, selection.end+1));
+    const isValidMatch = lastOcurrence && isValidCharTrigger(lastOcurrence[0].charAt(0), trigger)
 
-    if (lastOcurrence && lastOcurrence[0].charAt(0) === trigger && !isTrackingStarted) {
-      startTracking();
-    } else if (!lastOcurrence && isTrackingStarted) {
-      stopTracking();
-    }
+    if (isValidMatch && !isTrackingStarted) startTracking();
 
-    identifyKeyword(val);
+    if (isValidMatch) updateSuggestions(lastOcurrence[0].trim());
+    else if (!isValidMatch && isTrackingStarted) stopTracking();
   };
 
-  const closeSuggestionsPanel = () => {
+  const closeSuggestionsPanel = useCallback(() => {
     Animated.timing(suggestionRowHeight, {
       toValue: 0,
       duration: 100,
     }).start();
-  };
+  }, []);
 
   const updateSuggestions = (lastKeyword) => {
     props.triggerCallback(lastKeyword);
   };
 
-  const identifyKeyword = (val) => {
-    if (isTrackingStarted) {
-      const keywordArray = val.substr(0, selection.end + 1).match(props.regex);
-      if (keywordArray && !!keywordArray.length) {
-        const lastKeyword = keywordArray[keywordArray.length - 1];
-
-        updateSuggestions(lastKeyword);
-      } else {
-        stopTracking();
-      }
-    }
-  };
-
-  const openSuggestionsPanel = (height) => {
+  const openSuggestionsPanel = useCallback((height) => {
     Animated.timing(suggestionRowHeight, {
       toValue: height != null ? height : props.suggestionRowHeight,
       duration: 100,
     }).start();
-  };
+  }, [props.suggestionRowHeight]);
 
-  const startTracking = () => {
+  const startTracking = useCallback(() => {
     openSuggestionsPanel();
     setTracking(true);
-  };
+  }, []);
 
-  const stopTracking = () => {
+  const stopTracking = useCallback(() => {
     closeSuggestionsPanel();
     setTracking(false);
-  };
+  }, []);
 
-  const resetTextbox = () => {
-    stopTracking();
-  };
 
   return (
     <View>
@@ -162,7 +150,6 @@ const MentionsTextInput = (props, forwardedRef) => {
             forwardedRef(component);
           }
         }}
-        isTrackingStarted={isTrackingStarted}
         onChangeText={onChangeText}
         multiline={props.multiline}
         value={props.value}
@@ -176,10 +163,10 @@ const MentionsTextInput = (props, forwardedRef) => {
             horizontal={props.horizontal}
             // ListEmptyComponent={props.loadingComponent}
             enableEmptySections
-            data={props.suggestionsData}
-            keyExtractor={props.keyExtractor}
+            data={isTrackingStarted ? props.suggestionsData : []}
+            keyExtractor={(item, index) => item.id || index}
             renderItem={rowData => {
-              return props.renderSuggestionsRow(rowData, stopTracking, (e) => { setSelection(e.selection); setPreviousTriggerPos(e.selection.start)});
+              return props.renderSuggestionsRow(rowData, stopTracking, (e) => { setSelection(e.selection) });
             }}
           />
         </Animated.View>
@@ -191,19 +178,16 @@ const MentionsTextInput = (props, forwardedRef) => {
 MentionsTextInput.propTypes = {
   textInputStyle: TextInput.propTypes.style,
   suggestionsPanelStyle: ViewPropTypes.style,
-  loadingComponent: PropTypes.oneOfType([PropTypes.func, PropTypes.element]),
-  trigger: PropTypes.string.isRequired,
+  trigger: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   regex: PropTypes.instanceOf(RegExp),
-  triggerLocation: PropTypes.oneOf(['new-word-only', 'anywhere']).isRequired,
   value: PropTypes.string,
   onChangeText: PropTypes.func.isRequired,
   triggerCallback: PropTypes.func.isRequired,
   renderSuggestionsRow: PropTypes.oneOfType([PropTypes.func, PropTypes.element]).isRequired,
   suggestionsData: PropTypes.array.isRequired,
-  keyExtractor: PropTypes.func.isRequired,
   horizontal: PropTypes.bool,
   suggestionRowHeight: PropTypes.number.isRequired,
-  MaxVisibleRowCount(props, propName, componentName) {
+  MaxVisibleRowCount(props) {
     if (!props.horizontal && !props.MaxVisibleRowCount) {
       return new Error("Prop 'MaxVisibleRowCount' is required if horizontal is set to false.");
     }
@@ -214,7 +198,6 @@ MentionsTextInput.propTypes = {
 MentionsTextInput.defaultProps = {
   textInputStyle: {borderColor: '#ebebeb', borderWidth: 1, fontSize: 15},
   suggestionsPanelStyle: {backgroundColor: 'rgba(100,100,100,0.1)'},
-  loadingComponent: () => <Text>Loading...</Text>,
   horizontal: true,
   multiline: true,
 };
