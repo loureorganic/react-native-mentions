@@ -52,10 +52,10 @@ const MentionsTextInput = (props, forwardedRef) => {
   }, []);
 
   useEffect(() => {
-    if (props.togglePreviewList) {
+    if (props.closeMentionList) {
       stopTracking();
     }
-  }, [props.togglePreviewList]);
+  }, [props.closeMentionList]);
 
   useEffect(() => {
     if (props.value === '') {
