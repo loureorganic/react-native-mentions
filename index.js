@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _MentionsTextInput = _interopRequireDefault(require("./lib/MentionsTextInput.min"));
+var _MentionsTextInput = _interopRequireDefault(require("./lib/MentionsTextInput"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
