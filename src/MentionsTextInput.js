@@ -129,11 +129,13 @@ const MentionsTextInput = (props, forwardedRef) => {
   const startTracking = useCallback(() => {
     openSuggestionsPanel();
     setTracking(true);
+    if (props.onTracking) props.onTracking(true)
   }, []);
 
   const stopTracking = useCallback(() => {
     closeSuggestionsPanel();
     setTracking(false);
+    if (props.onTracking) props.onTracking(false)
   }, []);
 
 
@@ -230,6 +232,7 @@ MentionsTextInput.propTypes = {
   horizontal: PropTypes.bool,
   suggestionRowHeight: PropTypes.number.isRequired,
   onEnterItem: PropTypes.func,
+  onTracking: PropTypes.func,
   MaxVisibleRowCount(props) {
     if (!props.horizontal && !props.MaxVisibleRowCount) {
       return new Error("Prop 'MaxVisibleRowCount' is required if horizontal is set to false.");
