@@ -16,6 +16,9 @@ const InputWeb = forwardRef((props, forwardRef) => {
     <TextAreaAutoSize 
       {...props}
       ref={inputRef}
+      onKeyUp={e => {
+        if (props.onKeyPress) props.onKeyPress(e);
+      }}
       onInput={e => {
         if (props.onSelectionChange) props.onSelectionChange({selection: { start: e.target.selectionStart, end: e.target.selectionEnd }});
       }}
@@ -38,6 +41,7 @@ const MentionsTextInput = (props, forwardedRef) => {
   const [selection, setSelection] = useState({ start: 0, end: 0 });
   const [triggerPosition, setTriggerPosition] = useState(0);
   const [matchTrigger, setMatchTrigger] = useState(new RegExp());
+  const [cursor, setCursor] = useState(0);
 
   const suggestionRowHeight = useRef(new Animated.Value(0)).current;
 
@@ -58,6 +62,9 @@ const MentionsTextInput = (props, forwardedRef) => {
   }, [props.closeMentionList]);
 
   useEffect(() => {
+    // reset cursor
+    setCursor(0);
+
     if (props.value === '') {
       stopTracking();
     } else if (isTrackingStarted && !props.horizontal && props.suggestionsData.length !== 0) {
@@ -150,6 +157,28 @@ const MentionsTextInput = (props, forwardedRef) => {
             forwardedRef(component);
           }
         }}
+        onKeyPress={e => {
+            if (props.onKeyPress) props.onKeyPress();
+
+            if (Platform.OS === 'web' && isTrackingStarted) {
+              if (props.suggestionsData.length > 1 ) {
+                if (e.key === 'ArrowUp' && cursor > 0) {
+                  setCursor(cursor-1);
+                } else if (e.key === 'ArrowDown' && cursor < props.suggestionsData.length - 1) {
+                  setCursor(cursor+1);
+                }
+              }
+
+              if (e.key === 'Escape') {
+                stopTracking();
+                setTriggerPosition(selection.end);
+              }
+
+              if (e.key === 'Enter') {
+                props.onEnterItem(props.suggestionsData[cursor], stopTracking, (e) => setSelection(e.selection))
+              }
+            }
+        }}
         onChangeText={onChangeText}
         multiline={props.multiline}
         value={props.value}
@@ -159,14 +188,15 @@ const MentionsTextInput = (props, forwardedRef) => {
       <View style={props.panelStyle}>
         <Animated.View style={[props.suggestionsPanelStyle, {height: suggestionRowHeight}]}>
           <FlatList
+            key={cursor}
             keyboardShouldPersistTaps="always"
             horizontal={props.horizontal}
             // ListEmptyComponent={props.loadingComponent}
             enableEmptySections
             data={isTrackingStarted ? props.suggestionsData : []}
             keyExtractor={(item, index) => item.id || index}
-            renderItem={rowData => {
-              return props.renderSuggestionsRow(rowData, stopTracking, (e) => { setSelection(e.selection) });
+            renderItem={({ item, index }) => {
+              return props.renderSuggestionsRow(item, stopTracking, cursor === index, (e) => setSelection(e.selection));
             }}
           />
         </Animated.View>
@@ -187,6 +217,7 @@ MentionsTextInput.propTypes = {
   suggestionsData: PropTypes.array.isRequired,
   horizontal: PropTypes.bool,
   suggestionRowHeight: PropTypes.number.isRequired,
+  onEnterItem: PropTypes.func,
   MaxVisibleRowCount(props) {
     if (!props.horizontal && !props.MaxVisibleRowCount) {
       return new Error("Prop 'MaxVisibleRowCount' is required if horizontal is set to false.");
