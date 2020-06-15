@@ -16,7 +16,11 @@ const InputWeb = forwardRef((props, forwardRef) => {
     <TextAreaAutoSize 
       {...props}
       ref={inputRef}
-      onKeyUp={e => {
+      onKeyDown={e => {
+        if ((e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter') && props.isTrackingStarted) {
+          e.preventDefault();
+        }
+
         if (props.onKeyPress) props.onKeyPress(e);
       }}
       onInput={e => {
@@ -133,6 +137,34 @@ const MentionsTextInput = (props, forwardedRef) => {
   }, []);
 
 
+  const handleOnPress = useCallback((e) => {
+    setSelection(e.selection);
+    setTriggerPosition(e.selection.end)
+  }, [])
+  const handleKeyPress = useCallback((e) => {
+    if (props.onKeyPress) props.onKeyPress();
+
+    if (Platform.OS === 'web' && isTrackingStarted && props.suggestionsData.length > 0) {
+      if (props.suggestionsData.length > 1 ) {
+        if (e.key === 'ArrowUp' && cursor > 0) {
+          setCursor(cursor-1);
+        } else if (e.key === 'ArrowDown' && cursor < props.suggestionsData.length - 1) {
+          setCursor(cursor+1);
+        }
+      }
+
+      if (e.key === 'Escape') {
+        stopTracking();
+        setTriggerPosition(selection.end);
+      }
+
+      if (e.key === 'Enter') {
+        props.onEnterItem(props.suggestionsData[cursor], stopTracking, handleOnPress);
+      }
+    }
+  }, [props.suggestionsData, cursor, stopTracking, selection, isTrackingStarted])
+
+
   return (
     <View>
       <Input
@@ -157,28 +189,8 @@ const MentionsTextInput = (props, forwardedRef) => {
             forwardedRef(component);
           }
         }}
-        onKeyPress={e => {
-            if (props.onKeyPress) props.onKeyPress();
-
-            if (Platform.OS === 'web' && isTrackingStarted) {
-              if (props.suggestionsData.length > 1 ) {
-                if (e.key === 'ArrowUp' && cursor > 0) {
-                  setCursor(cursor-1);
-                } else if (e.key === 'ArrowDown' && cursor < props.suggestionsData.length - 1) {
-                  setCursor(cursor+1);
-                }
-              }
-
-              if (e.key === 'Escape') {
-                stopTracking();
-                setTriggerPosition(selection.end);
-              }
-
-              if (e.key === 'Enter') {
-                props.onEnterItem(props.suggestionsData[cursor], stopTracking, (e) => setSelection(e.selection))
-              }
-            }
-        }}
+        onKeyPress={handleKeyPress}
+        isTrackingStarted={isTrackingStarted}
         onChangeText={onChangeText}
         multiline={props.multiline}
         value={props.value}
@@ -196,7 +208,7 @@ const MentionsTextInput = (props, forwardedRef) => {
             data={isTrackingStarted ? props.suggestionsData : []}
             keyExtractor={(item, index) => item.id || index}
             renderItem={({ item, index }) => {
-              return props.renderSuggestionsRow(item, stopTracking, cursor === index, (e) => setSelection(e.selection));
+              return props.renderSuggestionsRow(item, stopTracking, cursor === index, handleOnPress);
             }}
           />
         </Animated.View>
