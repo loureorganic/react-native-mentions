@@ -166,6 +166,20 @@ const MentionsTextInput = (props, forwardedRef) => {
     }
   }, [props.suggestionsData, cursor, stopTracking, selection, isTrackingStarted])
 
+  const renderList = () => (
+    <FlatList
+      key={cursor}
+      keyboardShouldPersistTaps="always"
+      horizontal={props.horizontal}
+      // ListEmptyComponent={props.loadingComponent}
+      enableEmptySections
+      data={isTrackingStarted ? props.suggestionsData : []}
+      keyExtractor={(item, index) => item.id || index}
+      renderItem={({ item, index }) => {
+        return props.renderSuggestionsRow(item, stopTracking, cursor === index, handleOnPress);
+      }}
+    />
+  )
 
   return (
     <View>
@@ -200,20 +214,11 @@ const MentionsTextInput = (props, forwardedRef) => {
         placeholder={props.placeholder ? props.placeholder : 'Write a comment...'}
       />
       <View style={props.panelStyle}>
-        <Animated.View style={[props.suggestionsPanelStyle, {height: suggestionRowHeight}]}>
-          <FlatList
-            key={cursor}
-            keyboardShouldPersistTaps="always"
-            horizontal={props.horizontal}
-            // ListEmptyComponent={props.loadingComponent}
-            enableEmptySections
-            data={isTrackingStarted ? props.suggestionsData : []}
-            keyExtractor={(item, index) => item.id || index}
-            renderItem={({ item, index }) => {
-              return props.renderSuggestionsRow(item, stopTracking, cursor === index, handleOnPress);
-            }}
-          />
-        </Animated.View>
+        {props.withAnimation ? (
+          <Animated.View style={[props.suggestionsPanelStyle, {height: suggestionRowHeight}]}>
+            {renderList()}
+          </Animated.View>
+        ) : renderList()}
       </View>
     </View>
   );
@@ -239,6 +244,7 @@ MentionsTextInput.propTypes = {
     }
   },
   multiline: PropTypes.bool,
+  withAnimation: PropTypes.bool
 };
 
 MentionsTextInput.defaultProps = {
@@ -246,6 +252,7 @@ MentionsTextInput.defaultProps = {
   suggestionsPanelStyle: {backgroundColor: 'rgba(100,100,100,0.1)'},
   horizontal: true,
   multiline: true,
+  withAnimation: true
 };
 
 export default forwardRef(MentionsTextInput);
