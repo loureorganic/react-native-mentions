@@ -169,6 +169,7 @@ const MentionsTextInput = (props, forwardedRef) => {
   const renderList = () => (
     <FlatList
       key={cursor}
+      listKey={props.listKey || ''}
       keyboardShouldPersistTaps="always"
       horizontal={props.horizontal}
       // ListEmptyComponent={props.loadingComponent}
@@ -230,6 +231,7 @@ MentionsTextInput.propTypes = {
   trigger: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   regex: PropTypes.instanceOf(RegExp),
   value: PropTypes.string,
+  listKey: PropTypes.string,
   onChangeText: PropTypes.func.isRequired,
   triggerCallback: PropTypes.func.isRequired,
   renderSuggestionsRow: PropTypes.oneOfType([PropTypes.func, PropTypes.element]).isRequired,
