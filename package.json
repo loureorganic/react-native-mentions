@@ -1,5 +1,5 @@
 {
-  "name": "@nightw0lff/react-native-mentions",
+  "name": "@victorfernandesraton/react-native-mentions",
   "version": "1.6.9",
   "description": "Mentions textbox for React Native. Works on both ios and android",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nightw0lff/react-native-mentions.git"
+    "url": "git+https://github.com/victorfernandesraton/react-native-mentions.git"
   },
   "keywords": [
     "react-component",
@@ -19,9 +19,9 @@
   "author": "Harshana Abeyaratne <harshana.abeyaratne@gmail.com> (https://github.com/harshq)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/harshq/react-native-mentions/issues"
+    "url": "https://github.com/victorfernandesraton/react-native-mentions/issues"
   },
-  "homepage": "https://github.com/harshq/react-native-mentions#readme",
+  "homepage": "https://github.com/victorfernandesraton/react-native-mentions#readme",
   "dependencies": {
     "caret-pos": "^2.0.0",
     "react": "16.13.1",
