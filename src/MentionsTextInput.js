@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, forwardRef } from 'react';
-import {View, Animated, TextInput, FlatList, ViewPropTypes, Platform} from 'react-native';
+import {View, Animated, TextInput, FlatList, ViewPropTypes, Platform, TextInputBase} from 'react-native';
 import { position } from 'caret-pos';
 import PropTypes from 'prop-types';
 import TextAreaAutoSize from 'react-autosize-textarea';
@@ -226,8 +226,8 @@ const MentionsTextInput = (props, forwardedRef) => {
 }
 
 MentionsTextInput.propTypes = {
-  textInputStyle: TextInput.propTypes.style,
-  suggestionsPanelStyle: ViewPropTypes.style,
+  textInputStyle: PropTypes.object,
+  suggestionsPanelStyle: PropTypes.object,
   trigger: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   regex: PropTypes.instanceOf(RegExp),
   value: PropTypes.string,

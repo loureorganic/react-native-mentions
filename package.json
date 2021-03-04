@@ -10,7 +10,12 @@
     "type": "git",
     "url": "git+https://github.com/nightw0lff/react-native-mentions.git"
   },
-  "keywords": ["react-component", "react-native", "mentions", "textInput"],
+  "keywords": [
+    "react-component",
+    "react-native",
+    "mentions",
+    "textInput"
+  ],
   "author": "Harshana Abeyaratne <harshana.abeyaratne@gmail.com> (https://github.com/harshq)",
   "license": "MIT",
   "bugs": {
@@ -18,8 +23,12 @@
   },
   "homepage": "https://github.com/harshq/react-native-mentions#readme",
   "dependencies": {
-    "react-autosize-textarea": "^7.0.0",
-    "caret-pos": "^2.0.0"
+    "caret-pos": "^2.0.0",
+    "react": "16.13.1",
+    "react-autosize-textarea": "^7.1.0",
+    "react-dom": "^16.13.1",
+    "react-native": "0.63.3",
+    "react-native-web": "^0.11.7"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.1",
@@ -30,9 +39,10 @@
     "eslint-plugin-json": "^1.2.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.6.1",
+    "prettier": "^1.10.2",
     "prop-types": "^15.6.0",
     "react": "^16.2.0",
-    "react-native": "^0.62.2",
-    "prettier": "^1.10.2"
+    "react-app-rewired": "^2.1.8",
+    "react-native": "^0.62.2"
   }
 }
