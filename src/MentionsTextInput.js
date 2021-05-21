@@ -112,6 +112,7 @@ const MentionsTextInput = (props, forwardedRef) => {
     Animated.timing(suggestionRowHeight, {
       toValue: 0,
       duration: 100,
+      useNativeDriver: true,
     }).start();
   }, []);
 
@@ -123,6 +124,7 @@ const MentionsTextInput = (props, forwardedRef) => {
     Animated.timing(suggestionRowHeight, {
       toValue: height != null ? height : props.suggestionRowHeight,
       duration: 100,
+      useNativeDriver: true
     }).start();
   }, [props.suggestionRowHeight]);
 
