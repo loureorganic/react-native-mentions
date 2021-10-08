@@ -214,6 +214,7 @@ const MentionsTextInput = (props, forwardedRef) => {
         multiline={props.multiline}
         value={props.value}
         style={props.textInputStyle}
+        placeholderTextColor={props.placeholderTextColor}
         placeholder={props.placeholder ? props.placeholder : 'Write a comment...'}
       />
       <View style={props.panelStyle}>
