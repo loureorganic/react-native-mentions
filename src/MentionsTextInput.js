@@ -230,7 +230,7 @@ const MentionsTextInput = (props, forwardedRef) => {
 
 MentionsTextInput.propTypes = {
   textInputStyle: PropTypes.any,
-  placeholderTextColor: PropTypes.any,
+  placeholderTextColor: PropTypes.string,
   suggestionsPanelStyle: PropTypes.any,
   trigger: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   regex: PropTypes.instanceOf(RegExp),
