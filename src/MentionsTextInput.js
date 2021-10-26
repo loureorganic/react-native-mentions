@@ -214,6 +214,7 @@ const MentionsTextInput = (props, forwardedRef) => {
         multiline={props.multiline}
         value={props.value}
         style={props.textInputStyle}
+        placeholderTextColor="#999999"
         placeholder={props.placeholder ? props.placeholder : 'Write a comment...'}
       />
       <View style={props.panelStyle}>
@@ -229,6 +230,7 @@ const MentionsTextInput = (props, forwardedRef) => {
 
 MentionsTextInput.propTypes = {
   textInputStyle: PropTypes.any,
+  placeholderTextColor: PropTypes.string,
   suggestionsPanelStyle: PropTypes.any,
   trigger: PropTypes.oneOfType([PropTypes.string, PropTypes.array]).isRequired,
   regex: PropTypes.instanceOf(RegExp),
@@ -253,6 +255,7 @@ MentionsTextInput.propTypes = {
 
 MentionsTextInput.defaultProps = {
   textInputStyle: {borderColor: '#ebebeb', borderWidth: 1, fontSize: 15},
+  placeholderTextColor: 'red',
   suggestionsPanelStyle: {backgroundColor: 'rgba(100,100,100,0.1)'},
   horizontal: true,
   multiline: true,
